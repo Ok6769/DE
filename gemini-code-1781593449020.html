@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажёр Wortarten перед тестом</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+        .game-container {
+            text-align: center;
+            padding: 20px;
+        }
+        .word-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+            min-height: 45px;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        #feedback {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            min-height: 25px;
+        }
+        .correct { color: #2ecc71; }
+        .wrong { color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <h1>🧠 Экспресс-тренажёр по Wortarten</h1>
+    
+    <!-- Секция 1: Шпаргалка -->
+    <div class="section">
+        <h2>📋 Шпаргалка для теста (из image_3ebb39.png)</h2>
+        <table>
+            <tr>
+                <th>Латинское название</th>
+                <th>Немецкое школьное название</th>
+                <th>Пример</th>
+            </tr>
+            <tr>
+                <td><strong>Nomen</strong></td>
+                <td>Namenwort</td>
+                <td><strong>H</strong>und, <strong>B</strong>uch</td>
+            </tr>
+            <tr>
+                <td><strong>Verb</strong></td>
+                <td>Tätigkeitswort</td>
+                <td>spielen, laufen</td>
+            </tr>
+            <tr>
+                <td><strong>Adjektiv</strong></td>
+                <td>Artwort</td>
+                <td>schön, klein</td>
+            </tr>
+            <tr>
+                <td><strong>Pronomen</strong></td>
+                <td>Begleiter oder Stellvertreter</td>
+                <td>mein, der, er, wir</td>
+            </tr>
+            <tr>
+                <td><strong>Partikel</strong></td>
+                <td>unveränderliches Restwort</td>
+                <td>und, in, aber</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Секция 2: Игра -->
+    <div class="section game-container">
+        <h2>🎮 Интерактивная проверка</h2>
+        <p>Определи немецкое название для слова:</p>
+        <div class="word-display" id="word-to-guess">Загрузка...</div>
+        
+        <div id="buttons-container">
+            <button class="btn" onclick="checkAnswer('Namenwort')">Namenwort (Nomen)</button>
+            <button class="btn" onclick="checkAnswer('Tätigkeitswort')">Tätigkeitswort (Verb)</button>
+            <button class="btn" onclick="checkAnswer('Artwort')">Artwort (Adjektiv)</button>
+            <button class="btn" onclick="checkAnswer('Begleiter oder Stellvertreter')">Begleiter / Stellvertreter (Pronomen)</button>
+            <button class="btn" onclick="checkAnswer('unveränderliches Restwort')">unveränderliches Restwort (Partikel)</button>
+        </div>
+
+        <div id="feedback"></div>
+        <button class="btn" style="background-color: #2ecc71; margin-top: 20px; display: none;" id="next-btn" onclick="nextWord()">Следующее слово ➡️</button>
+    </div>
+
+    <script>
+        // База слов для тренировки
+        const words = [
+            { word: "Katze (кошка)", type: "Namenwort" },
+            { word: "laufen (бежать)", type: "Tätigkeitswort" },
+            { word: "schön (красивый)", type: "Artwort" },
+            { word: "ich (я)", type: "Begleiter oder Stellvertreter" },
+            { word: "und (и)", type: "unveränderliches Restwort" },
+            { word: "Haus (дом)", type: "Namenwort" },
+            { word: "schreiben (писать)", type: "Tätigkeitswort" },
+            { word: "schnell (быстро)", type: "Artwort" },
+            { word: "mein (мой)", type: "Begleiter oder Stellvertreter" },
+            { word: "auf (на)", type: "unveränderliches Restwort" }
+        ];
+
+        let currentWordIndex = 0;
+
+        function showWord() {
+            document.getElementById('word-to-guess').innerText = words[currentWordIndex].word;
+            document.getElementById('feedback').innerText = '';
+            document.getElementById('feedback').className = '';
+            document.getElementById('next-btn').style.display = 'none';
+            toggleButtons(false);
+        }
+
+        function checkAnswer(chosenType) {
+            const correctAnswer = words[currentWordIndex].type;
+            const feedbackEl = document.getElementById('feedback');
+            
+            if (chosenType === correctAnswer) {
+                feedbackEl.innerText = "🎉 Правильно! Молодец!";
+                feedbackEl.className = "correct";
+            } else {
+                feedbackEl.innerText = `❌ Ошибка. Правильный ответ: ${correctAnswer}`;
+                feedbackEl.className = "wrong";
+            }
+            
+            toggleButtons(true);
+            document.getElementById('next-btn').style.display = 'inline-block';
+        }
+
+        function toggleButtons(disabled) {
+            const buttons = document.querySelectorAll('#buttons-container .btn');
+            buttons.forEach(btn => btn.disabled = disabled);
+        }
+
+        function nextWord() {
+            currentWordIndex = (currentWordIndex + 1) % words.length;
+            showWord();
+        }
+
+        // Запуск при старте страницы
+        showWord();
+    </script>
+</body>
+</html>
